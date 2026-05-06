@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:alpine
+    container_name: duobao-redis
+    ports:
+      - "6380:6379"
+  mysql:
+    image: mysql:8
+    container_name: duobao-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: duobao
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  rabbitmq:
+    image: rabbitmq:3-management # The 'management' tag gives us a cool UI!
+    container_name: duobao-rabbitmq
+    ports:
+      - "5672:5672"   # The port Spring Boot uses to send messages
+      - "15672:15672" # The Web UI port so you can see your queues!
+  app:
+    build: .
+    container_name: duobao-app
+    ports:
+      - "8080:8080"
+    depends_on:
+      - redis
+      - mysql
+      - rabbitmq
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/duobao?useSSL=false&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_RABBITMQ_HOST: rabbitmq
+volumes:
+  mysql_data:

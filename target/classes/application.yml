@@ -1,0 +1,36 @@
+spring:
+  application:
+    name: DuoBao
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/duobao_db?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Kuala_Lumpur
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    #Tells Spring to automatically create the tables for you based on your Java Entities!
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+        hibernate:
+          format_sql: true
+
+  data:
+    redis:
+      host: localhost
+      database: 0
+      port: 6380
+
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+    listener:
+      simple:
+        retry:
+          enabled: true
+          max-retries: 3
+        default-requeue-rejected: false
