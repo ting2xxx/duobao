@@ -24,5 +24,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     List<Product> findByIsFlashSale(Boolean isFlashSale);
 
+    List<Product> findAllByIdIn(List<Long> productIds);
+
 
 }

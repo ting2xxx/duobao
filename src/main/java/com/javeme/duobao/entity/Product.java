@@ -27,6 +27,8 @@ public class Product {
     private Integer stock;
     private Long categoryId;
     private String image;
+
+    //0:下架 1:上架
     private Integer status;
     private String description;
     private LocalDateTime createTime;

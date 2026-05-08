@@ -1,4 +1,4 @@
-package com.javeme.duobao.task;
+package com.javeme.duobao.scheduler;
 
 import com.javeme.duobao.entity.Product;
 import com.javeme.duobao.repository.OrderItemRepository;
@@ -9,7 +9,6 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 @Component

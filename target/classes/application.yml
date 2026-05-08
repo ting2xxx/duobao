@@ -3,7 +3,7 @@ spring:
     name: DuoBao
 
   datasource:
-    url: jdbc:mysql://localhost:3306/duobao_db?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Kuala_Lumpur
+    url: jdbc:mysql://localhost:3306/duobao?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Kuala_Lumpur
     username: root
     password: root
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -34,3 +34,6 @@ spring:
           enabled: true
           max-retries: 3
         default-requeue-rejected: false
+gcp:
+  storage:
+    bucket-name: skytakeout-ting2xxx-2026

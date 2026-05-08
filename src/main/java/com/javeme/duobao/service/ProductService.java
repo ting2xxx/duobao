@@ -1,5 +1,8 @@
 package com.javeme.duobao.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.javeme.duobao.entity.Product;
 import com.javeme.duobao.repository.ProductRepository;
 import com.javeme.duobao.vo.ProductVO;
@@ -10,8 +13,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
-import tools.jackson.core.type.TypeReference;
-import tools.jackson.databind.ObjectMapper;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -33,8 +34,12 @@ public class ProductService {
         String cachedJson = stringRedisTemplate.opsForValue().get(key);
         if (cachedJson != null) {
             // ObjectMapper turns the JSON String back into a List<ProductVO>
-            return objectMapper.readValue(cachedJson, new TypeReference<List<ProductVO>>() {
-            });
+            try {
+                return objectMapper.readValue(cachedJson, new TypeReference<List<ProductVO>>() {
+                });
+            } catch (Exception e) {
+                throw new RuntimeException("Error reading cache data for category: " + categoryId);
+            }
         }
 
         // 1. Get the raw entities from the database
@@ -54,8 +59,13 @@ public class ProductService {
                 })
                         .collect(Collectors.toList());
 
-        String jsonToCache = objectMapper.writeValueAsString(voList);
-        stringRedisTemplate.opsForValue().set(key,jsonToCache, 30, TimeUnit.MINUTES);
+        try {
+
+            String jsonToCache = objectMapper.writeValueAsString(voList);
+            stringRedisTemplate.opsForValue().set(key,jsonToCache, 30, TimeUnit.MINUTES);
+        } catch (Exception e) {
+            throw new RuntimeException("Error saving cache data for category: " + categoryId);
+        }
         return voList;
     }
 

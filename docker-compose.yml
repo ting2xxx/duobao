@@ -17,6 +17,10 @@ services:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost" ]
+      timeout: 5s
+      retries: 10
 
   rabbitmq:
     image: rabbitmq:3-management # The 'management' tag gives us a cool UI!
@@ -30,9 +34,12 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - redis
-      - mysql
-      - rabbitmq
+       redis:
+         condition: service_started
+       mysql:
+         condition: service_healthy
+       rabbitmq:
+         condition: service_started
     environment:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/duobao?useSSL=false&allowPublicKeyRetrieval=true
       SPRING_DATASOURCE_USERNAME: root

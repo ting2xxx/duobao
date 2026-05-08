@@ -9,6 +9,7 @@ import com.javeme.duobao.repository.ProductRepository;
 import com.javeme.duobao.vo.CartVO;
 import lombok.RequiredArgsConstructor;
 import org.aspectj.weaver.ast.Or;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +26,7 @@ public class OrderService {
     private final ProductRepository productRepository;
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
+    private final RabbitTemplate rabbitTemplate;
 
     @Transactional
     public void checkout(Long userId) {
@@ -72,8 +74,8 @@ public class OrderService {
         for (OrderItem orderItem : orderItemList) {
             orderItem.setOrderId(savedOrder.getId());
             orderItemRepository.save(orderItem);
+            rabbitTemplate.convertAndSend("order.delay.queue", savedOrder.getId());
         }
-
         cartService.clearCart(userId);
     }
 }

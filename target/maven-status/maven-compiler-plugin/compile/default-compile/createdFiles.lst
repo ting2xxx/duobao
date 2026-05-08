@@ -5,8 +5,13 @@ com\javeme\duobao\entity\Order.class
 com\javeme\duobao\configuration\WebMvcConfiguration.class
 com\javeme\duobao\vo\OrderVO.class
 com\javeme\duobao\listener\OrderMessageListener.class
+com\javeme\duobao\dto\ReviewDTO.class
+com\javeme\duobao\dto\ErrorResponse.class
+com\javeme\duobao\entity\Review.class
+com\javeme\duobao\service\ReviewService.class
 com\javeme\duobao\vo\UserVO$UserVOBuilder.class
 com\javeme\duobao\vo\UserLoginVO.class
+com\javeme\duobao\dto\CartItemDTO.class
 com\javeme\duobao\dto\ProductDTO.class
 com\javeme\duobao\repository\AddressBookRepository.class
 com\javeme\duobao\service\UserService.class
@@ -17,6 +22,7 @@ com\javeme\duobao\dto\OrderDTO.class
 com\javeme\duobao\entity\OrderItem.class
 com\javeme\duobao\controller\PaymentController.class
 com\javeme\duobao\task\RedisSyncTask.class
+com\javeme\duobao\controller\CartController.class
 com\javeme\duobao\vo\AddressBookVO.class
 com\javeme\duobao\entity\OrderMessage.class
 com\javeme\duobao\vo\UserLoginVO$UserLoginVOBuilder.class
@@ -24,12 +30,15 @@ com\javeme\duobao\controller\ProductController.class
 com\javeme\duobao\service\FlashSalesOrderService.class
 com\javeme\duobao\entity\Product.class
 com\javeme\duobao\repository\OrderItemRepository.class
+com\javeme\duobao\service\CartService.class
 com\javeme\duobao\controller\UserController.class
+com\javeme\duobao\repository\ReviewRepository.class
 com\javeme\duobao\vo\ProductVO.class
 com\javeme\duobao\exception\GlobalExceptionHandler.class
 com\javeme\duobao\service\StandardOrderService.class
 com\javeme\duobao\common\BaseContext.class
 com\javeme\duobao\vo\UserVO.class
+com\javeme\duobao\vo\CartVO.class
 com\javeme\duobao\DuoBaoApplication.class
 com\javeme\duobao\dto\UserLoginDTO.class
 com\javeme\duobao\utils\JwtUtil.class
@@ -38,6 +47,7 @@ com\javeme\duobao\repository\UserRepository.class
 com\javeme\duobao\service\AdminProductService.class
 com\javeme\duobao\vo\OrderItemVO.class
 com\javeme\duobao\interceptor\JwtInterceptor.class
+com\javeme\duobao\service\OrderService.class
 com\javeme\duobao\service\PaymentService.class
 com\javeme\duobao\dto\AddressBookDTO.class
 com\javeme\duobao\entity\User.class

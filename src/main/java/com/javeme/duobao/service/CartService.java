@@ -5,7 +5,6 @@ import com.javeme.duobao.entity.Product;
 import com.javeme.duobao.repository.ProductRepository;
 import com.javeme.duobao.vo.CartVO;
 import lombok.RequiredArgsConstructor;
-import org.jspecify.annotations.NonNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;

@@ -19,10 +19,16 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
                 .addPathPatterns("/**")
                 .excludePathPatterns(
                         "/api/users/login",
-                        "/api/users/register");
+                        "/api/users/register",
+                        "/api/upload",
+                        "/swagger-ui/**",  // <-- Allow Swagger UI
+                        "/v3/api-docs/**", // <-- Allow Swagger API Docs
+                        "/swagger-ui.html"
+                );
+
 
         registry.addInterceptor(rateLimitInterceptor)
-                .addPathPatterns("api/orders/submit")
+                .addPathPatterns("/api/orders/submit")
                 .addPathPatterns("/api/payments/pay/**");
     }
 }

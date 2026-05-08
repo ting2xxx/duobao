@@ -1,11 +1,10 @@
 package com.javeme.duobao.configuration;
 
 import org.springframework.amqp.core.*;
-import org.springframework.amqp.support.converter.JacksonJsonMessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.amqp.support.converter.MessageConverter;
-
+import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 @Configuration
 public class RabbitMQConfiguration {
 
@@ -18,7 +17,7 @@ public class RabbitMQConfiguration {
     }
     @Bean
     public MessageConverter jsonMessageConvert() {
-        return new JacksonJsonMessageConverter();
+        return new Jackson2JsonMessageConverter();
     }
 
     //DLQ

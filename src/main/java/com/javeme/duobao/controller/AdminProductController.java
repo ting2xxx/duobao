@@ -1,5 +1,6 @@
 package com.javeme.duobao.controller;
 
+import com.javeme.duobao.dto.ProductDTO;
 import com.javeme.duobao.service.AdminProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -28,5 +29,11 @@ public class AdminProductController {
     public ResponseEntity<String> updateStock(@PathVariable Long productId, @RequestParam Integer quantity) {
         adminProductService.updateStock(productId, quantity);
         return ResponseEntity.ok("Stock successfully updated!");
+    }
+
+    @PostMapping("/add")
+    public ResponseEntity<String> addProduct(@RequestBody ProductDTO productDTO) {
+        adminProductService.addProduct(productDTO);
+        return ResponseEntity.ok("Product successfully added!");
     }
 }

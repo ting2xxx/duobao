@@ -10,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 
+import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -52,6 +54,7 @@ public class UserService {
         user.setUsername(userRegisterDTO.getUsername());
         String hashedPassword = DigestUtils.md5DigestAsHex(userRegisterDTO.getPassword().getBytes());
         user.setPassword(hashedPassword);
+        user.setCreateDate(LocalDateTime.now());
         user.setStatus(1);
         user.setRole(1);
         userRepository.save(user);

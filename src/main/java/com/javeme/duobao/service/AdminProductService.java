@@ -1,5 +1,7 @@
 package com.javeme.duobao.service;
 
+import com.javeme.duobao.common.BaseContext;
+import com.javeme.duobao.dto.ProductDTO;
 import com.javeme.duobao.entity.Product;
 import com.javeme.duobao.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
@@ -7,6 +9,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -65,6 +69,20 @@ public class AdminProductService {
             String key = "stock:product:" + productId;
             stringRedisTemplate.opsForValue().set(key, quantity.toString());
         }
+    }
 
+    public void addProduct(ProductDTO productDTO) {
+        Product product = new Product();
+        product.setProductName(productDTO.getProductName());
+        product.setDescription(productDTO.getDescription());
+        product.setStock(productDTO.getStock());
+        product.setPrice(productDTO.getPrice());
+        product.setImage(productDTO.getImage());
+        product.setCategoryId(productDTO.getCategoryId());
+        product.setCreateUser(BaseContext.getCurrentID());
+        product.setCreateTime(LocalDateTime.now());
+        product.setStatus(1);
+
+        productRepository.save(product);
     }
 }
