@@ -29,6 +29,7 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
 
         registry.addInterceptor(rateLimitInterceptor)
                 .addPathPatterns("/api/orders/submit")
-                .addPathPatterns("/api/payments/pay/**");
+                .addPathPatterns("/api/payments/pay/**")
+                .excludePathPatterns("/api/payment/webhook");
     }
 }

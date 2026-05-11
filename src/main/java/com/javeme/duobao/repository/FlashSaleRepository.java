@@ -33,4 +33,7 @@ public interface FlashSaleRepository extends JpaRepository<FlashSale, Long> {
     @Query("UPDATE FlashSale f SET f.status = 2 WHERE f.endTime <:now AND f.status = 1")
     void updateToExpired(@Param("now") LocalDateTime now);
 
+    List<FlashSale> findByStatusAndStartTimeLessThanEqual(Integer status, LocalDateTime now);
+
+    List<FlashSale> findByStatusAndEndTimeLessThanEqual(Integer status, LocalDateTime now);
 }

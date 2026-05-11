@@ -11,6 +11,7 @@ import com.javeme.duobao.repository.UserRepository;
 import com.javeme.duobao.vo.OrderVO;
 import com.javeme.duobao.vo.UserVO;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PaymentService {
 
 //    private final PaymentRepository paymentRepository;
@@ -103,5 +105,43 @@ public class PaymentService {
             //unlock
             stringRedisTemplate.delete(key);
         }
+    }
+
+    @Transactional
+    public void paySuccess(String orderNumber) {
+
+        //Find with orderNumber
+        Order order = orderRepository.findByOrderNumber(orderNumber).orElseThrow(() ->
+                new RuntimeException("Order not found"));
+
+        //Check whether order status is canceled
+        if (order.getStatus().equals(Order.CANCELLED)) {
+            throw new RuntimeException("Order was already canceled due to timeout");
+        }
+
+        //set pay status to paid, status to confirmed
+        order.setPayStatus(Order.PAID);
+        order.setStatus(Order.CONFIRMED);
+        order.setPayTime(LocalDateTime.now());
+
+        orderRepository.save(order);
+
+        log.info("Order {} payment confirmed. Cancellation avoided.", orderNumber);
+    }
+
+    public String initiatePayment(Long userId, String orderNumber) {
+
+        Order order = orderRepository.findByOrderNumberAndUserId(orderNumber, userId).orElseThrow(() ->
+                new RuntimeException("Order not found"));
+
+        if (!order.getStatus().equals(Order.TO_BE_CONFIRMED)) {
+            throw new RuntimeException("This order cannot be paid (Status: " + order.getStatus() + ")");
+        }
+
+        String mockPaymentUrl = "http://localhost:3000/pay?order=" +orderNumber + "&amount=" + order.getAmount();
+
+        log.info("User {} initiated payment for order {}. Amount: {}", userId, orderNumber, order.getAmount());
+
+        return mockPaymentUrl;
     }
 }

@@ -20,18 +20,19 @@ public class RedisSyncTask {
     private final ProductRepository productRepository;
     private final OrderItemRepository orderItemRepository;
 
-    @Scheduled(cron = "0 0 * * * *")
-    public void syncFlashSaleStock() {
-
-        List<Product> productList = productRepository.findByIsFlashSale(true);
-        for (Product product : productList) {
-            if (!stringRedisTemplate.hasKey("stock:product:" + product.getId())){
-
-                stringRedisTemplate.opsForValue().set("stock:product:" + product.getId(), product.getStock().toString());
-                log.info("Redis Sync: Restored missing stock for Product ID {}", product.getId());
-            }
-        }
-    }
+//    @Scheduled(cron = "0 0 * * * *")
+//    public void syncFlashSaleStock() {
+//
+//        List<Product> productList = productRepository.findByIsFlashSale(true);
+//        for (Product product : productList) {
+//            if (!stringRedisTemplate.hasKey("stock:product:" + product.getId())){
+//
+//                stringRedisTemplate.opsForValue().set("stock:product:" + product.getId(), product.getStock().toString());
+//                log.info("Redis Sync: Restored missing stock for Product ID {}", product.getId());
+//
+//            }
+//        }
+//    }
 
     @Scheduled(cron = "0 0/10 * * * *")
     public void syncTopSellingProducts() {

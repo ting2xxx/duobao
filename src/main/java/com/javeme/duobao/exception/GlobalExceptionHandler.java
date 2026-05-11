@@ -42,8 +42,9 @@ public class GlobalExceptionHandler {
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 "a system error occurred. Please try again later.",
                 System.currentTimeMillis()
-        );
 
+        );
+        ex.printStackTrace();
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
     }
 }

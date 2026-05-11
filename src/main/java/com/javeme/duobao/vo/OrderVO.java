@@ -25,8 +25,12 @@ public class OrderVO {
     private String consignee;
     private LocalDateTime payTime;
     private LocalDateTime cancelTime;
+    private LocalDateTime orderTime;
     private Integer deliveryStatus;
     private LocalDateTime deliveryTime;
     private String remark;
     private Integer status;
+
+    private String firstItemName;
+    private String firstItemImage;
 }
