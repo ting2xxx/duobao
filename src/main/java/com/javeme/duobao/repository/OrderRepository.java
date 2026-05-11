@@ -22,7 +22,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             "where o.userId = :userId " +
             "and (:status is null or o.status = :status) " +
             "and (cast(:start as timestamp) is null or o.orderTime >= :start) " +
-            "and (cast(:end as timestamp) is null or o.orderTime <= :end)" +
+            "and (cast(:end as timestamp) is null or o.orderTime <= :end) " +
             "order by o.orderTime desc")
     Page<Order> findOrdersByFilters(
             @Param("userId") Long userId,

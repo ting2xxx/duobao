@@ -129,7 +129,7 @@ public class PaymentService {
         log.info("Order {} payment confirmed. Cancellation avoided.", orderNumber);
     }
 
-    public String initiatePayment(Long userId, String orderNumber) {
+    public String getPaymentLink(Long userId, String orderNumber) {
 
         Order order = orderRepository.findByOrderNumberAndUserId(orderNumber, userId).orElseThrow(() ->
                 new RuntimeException("Order not found"));
