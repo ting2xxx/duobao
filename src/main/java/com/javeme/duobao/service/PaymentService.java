@@ -119,6 +119,10 @@ public class PaymentService {
             throw new RuntimeException("Order was already canceled due to timeout");
         }
 
+        if (Order.PAID.equals(order.getPayStatus())) {
+            return;
+        }
+
         //set pay status to paid, status to confirmed
         order.setPayStatus(Order.PAID);
         order.setStatus(Order.CONFIRMED);
@@ -140,7 +144,6 @@ public class PaymentService {
 
         String mockPaymentUrl = "http://localhost:3000/pay?order=" +orderNumber + "&amount=" + order.getAmount();
 
-        log.info("User {} initiated payment for order {}. Amount: {}", userId, orderNumber, order.getAmount());
 
         return mockPaymentUrl;
     }

@@ -22,7 +22,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ErrorResponse> handleRunTimeException(RuntimeException ex) {
 
-        log.error("Business rule violation: {}", ex.getMessage());
+        log.error("Business rule violation: {}", ex.getMessage(), ex);
 
         ErrorResponse error = new ErrorResponse(
                 HttpStatus.BAD_REQUEST.value(),

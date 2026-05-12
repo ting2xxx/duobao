@@ -23,7 +23,9 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
                         "/api/upload",
                         "/swagger-ui/**",  // <-- Allow Swagger UI
                         "/v3/api-docs/**", // <-- Allow Swagger API Docs
-                        "/swagger-ui.html"
+                        "/swagger-ui.html",
+                        "/api/payments/webhook",
+                        "/api/mock-gateway/**"
                 );
 
 

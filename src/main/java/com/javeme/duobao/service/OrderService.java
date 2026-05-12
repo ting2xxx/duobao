@@ -19,6 +19,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -39,10 +40,20 @@ public class OrderService {
 
         List<CartVO> cart = cartService.getCart(userId);
 
-        if (cart == null) {
+        if (cart == null || cart.isEmpty()) {
 
             throw new RuntimeException("Cart is empty");
         }
+
+        AddressBook address = addressBookRepository.findByUserIdAndIsDefault(userId, 1);
+
+        if (address == null) {
+            List<AddressBook> addressList = addressBookRepository.findByUserId(userId);
+            if (addressList.isEmpty()) throw new RuntimeException("Please add an address");
+            address = addressList.get(0);
+        }
+
+
         BigDecimal totalAmount = BigDecimal.ZERO;
         List<OrderItem> orderItemList = new ArrayList<>();
 
@@ -52,7 +63,6 @@ public class OrderService {
                     new RuntimeException("Product " + cartVO.getProductId() + " not found"));
 
             if (cartVO.getQuantity() > product.getStock()) {
-
                 throw new RuntimeException("Product " + product.getProductName() + " is out of stock!");
             }
 
@@ -60,11 +70,12 @@ public class OrderService {
             productRepository.save(product);
 
             BigDecimal subTotal = cartVO.getPrice().multiply(new BigDecimal(cartVO.getQuantity()));
-
             totalAmount = totalAmount.add(subTotal);
 
             OrderItem item = new OrderItem();
             item.setProductId(cartVO.getProductId());
+            item.setProductName(product.getProductName());
+            item.setProductImage(product.getImage());
             item.setQuantity(cartVO.getQuantity());
             item.setAmount(cartVO.getPrice());
             orderItemList.add(item);
@@ -72,9 +83,11 @@ public class OrderService {
 
         Order order = new Order();
         order.setUserId(userId);
+        order.setOrderNumber(UUID.randomUUID().toString().replace("-",""));
         order.setAmount(totalAmount);
         order.setStatus(Order.TO_BE_CONFIRMED);
         order.setOrderTime(LocalDateTime.now());
+        order.setAddressBookId(address.getId());
         Order savedOrder = orderRepository.save(order);
 
         for (OrderItem orderItem : orderItemList) {

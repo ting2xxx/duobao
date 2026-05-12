@@ -60,6 +60,10 @@ public class PaymentController {
             @RequestHeader("Provider-Signature") String signature,
             @RequestBody String rawPayload) {
 
+
+        log.info("--- DEBUG WEBHOOK ---");
+        log.info("Signature from Mock Gateway: {}", signature);
+        log.info("Signature Expected by Backend: {}", WebhookSecurityUtil.generateSignature(rawPayload, WebhookSecurityUtil.SECRET_KEY));
         //check signature whether is correct
 
         if (!WebhookSecurityUtil.verifySignature(rawPayload, signature)) {

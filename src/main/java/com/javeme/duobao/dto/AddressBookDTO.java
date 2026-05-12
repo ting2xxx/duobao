@@ -10,8 +10,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class AddressBookDTO {
 
-    private Long id;
-
     private String consignee;
     private String phone;
     private Integer gender;
