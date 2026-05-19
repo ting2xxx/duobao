@@ -17,6 +17,13 @@ public class CartController {
 
     private final StringRedisTemplate stringRedisTemplate;
     private final CartService cartService;
+
+    /**
+     * Add item to cart
+     * @param userId
+     * @param cartItemDTO
+     * @return
+     */
     @PostMapping("/add")
     public ResponseEntity<String> add(@RequestHeader("userId") Long userId,
                                       @RequestBody CartItemDTO cartItemDTO) {
@@ -25,12 +32,22 @@ public class CartController {
         return ResponseEntity.ok("Cart successfully updated!");
     }
 
+    /**
+     * get the cart item
+     * @param userId
+     * @return
+     */
     @GetMapping
     public ResponseEntity<List<CartVO>> getCart(@RequestHeader("userId") Long userId) {
         List<CartVO> cart = cartService.getCart(userId);
         return ResponseEntity.ok(cart);
     }
 
+    /**
+     * clear cart
+     * @param userId
+     * @return
+     */
     @DeleteMapping("/clear")
     public ResponseEntity<String> clear(@RequestHeader("userId") Long userId) {
         cartService.clearCart(userId);

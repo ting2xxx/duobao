@@ -33,19 +33,24 @@ public class StandardOrderService {
     @Transactional
     public OrderVO submitSync(OrderDTO orderDTO) {
 
+        //1. Get current user and generate order number
         Long userId = BaseContext.getCurrentID();
         String orderNumber = UUID.randomUUID().toString();
 
+        //Find user, product and address by id
         User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
         Product product = productRepository.findById(orderDTO.getProductId()).orElseThrow(() -> new RuntimeException("Product not found"));
         AddressBook address = addressBookRepository.findById(orderDTO.getAddressBookId()).orElseThrow(() -> new RuntimeException("Address not found"));
 
+        //check stock
         if (product.getStock() < orderDTO.getQuantity()) {
             throw new RuntimeException("Out of stock");
         }
 
+        //count total amount
         BigDecimal totalAmount = product.getPrice().multiply(new BigDecimal(orderDTO.getQuantity()));
 
+        //create order object
         Order order = new Order();
         order.setStatus(Order.TO_BE_CONFIRMED);
         order.setOrderNumber(orderNumber);
@@ -61,9 +66,11 @@ public class StandardOrderService {
         order.setPostcode(address.getPostcode());
         order.setConsignee(address.getConsignee());
 
+        //save order
         Order savedOrder = orderRepository.save(order);
         productRepository.deductStock(product.getId(), orderDTO.getQuantity());
 
+        //create order item
         OrderItem orderItem = new OrderItem();
         orderItem.setOrderId(savedOrder.getId());
         orderItem.setProductId(product.getId());
@@ -76,9 +83,12 @@ public class StandardOrderService {
         orderMessage.setOrderNumber(orderNumber);
         orderMessage.setProductId(product.getId());
         orderMessage.setQuantity(orderDTO.getQuantity());
+        //use rabbitMQ to wait for 15 minutes, so user can complete the payment
         rabbitTemplate.convertAndSend("order.delay.queue", orderMessage);
+        //save orderItem
         orderItemRepository.save(orderItem);
 
+        //return orderVO
         return OrderVO.builder()
                 .orderNumber(orderNumber)
                 .status(order.getStatus())

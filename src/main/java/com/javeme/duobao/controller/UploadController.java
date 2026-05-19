@@ -17,6 +17,11 @@ public class UploadController {
 
     private final GcpStorageService gcpStorageService;
 
+    /**
+     * Upload image to GCP
+     * @param file
+     * @return
+     */
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> uploadImage(@RequestParam MultipartFile file) {
         if (file == null || file.isEmpty()) {

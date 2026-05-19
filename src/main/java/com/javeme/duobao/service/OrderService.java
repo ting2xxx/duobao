@@ -38,18 +38,24 @@ public class OrderService {
     @Transactional
     public void checkout(Long userId) {
 
+        //Get cart list
         List<CartVO> cart = cartService.getCart(userId);
 
+        //if cart is null or empty, throw exception
         if (cart == null || cart.isEmpty()) {
 
             throw new RuntimeException("Cart is empty");
         }
 
+        //find default address of the user
         AddressBook address = addressBookRepository.findByUserIdAndIsDefault(userId, 1);
 
+        //if address is null, find address of the user
         if (address == null) {
             List<AddressBook> addressList = addressBookRepository.findByUserId(userId);
+            //if still empty, throw exception
             if (addressList.isEmpty()) throw new RuntimeException("Please add an address");
+            //if there is address, get the 1st one
             address = addressList.get(0);
         }
 
@@ -57,21 +63,28 @@ public class OrderService {
         BigDecimal totalAmount = BigDecimal.ZERO;
         List<OrderItem> orderItemList = new ArrayList<>();
 
+        //Loop through cartVO
         for (CartVO cartVO : cart) {
 
+            //find product by productId
             Product product = productRepository.findById(cartVO.getProductId()).orElseThrow(() ->
                     new RuntimeException("Product " + cartVO.getProductId() + " not found"));
 
+            //if cart quantity more than product stock, throws exception
             if (cartVO.getQuantity() > product.getStock()) {
                 throw new RuntimeException("Product " + product.getProductName() + " is out of stock!");
             }
 
+            //if not, set product stock by deducting cart quantity
             product.setStock(product.getStock() - cartVO.getQuantity());
             productRepository.save(product);
 
+            //calculate subtotal for a single product
             BigDecimal subTotal = cartVO.getPrice().multiply(new BigDecimal(cartVO.getQuantity()));
+            //calculate total amount for the cart
             totalAmount = totalAmount.add(subTotal);
 
+            //create orderItem object
             OrderItem item = new OrderItem();
             item.setProductId(cartVO.getProductId());
             item.setProductName(product.getProductName());
@@ -81,6 +94,7 @@ public class OrderService {
             orderItemList.add(item);
         }
 
+        //create order object
         Order order = new Order();
         order.setUserId(userId);
         order.setOrderNumber(UUID.randomUUID().toString().replace("-",""));
@@ -96,16 +110,22 @@ public class OrderService {
 
         }
 
+        //delay 15 minutes to let user finish payment
         rabbitTemplate.convertAndSend("order.delay.queue", savedOrder.getId());
+        //clear cart
         cartService.clearCart(userId);
     }
 
     public List<OrderVO> listOrders(Long userId, GetOrderDto getOrderDto) {
+
+        //Create pageable, set the page and the page size
         Pageable pageable = PageRequest.of(
-                getOrderDto.getPage() - 1,
+                getOrderDto.getPage() - 1, //1st page is page 0
                 getOrderDto.getPageSize()
         );
-
+        //find orders by specific condition
+        //return a Page<Order>, it's not only return the items and also how many pages there are
+        //by status, by userId, byStartDate, byEndDate, by page or byNothing
         Page<Order> orderPage = orderRepository.findOrdersByFilters(
                 userId,
                 getOrderDto.getStatus(),
@@ -113,15 +133,15 @@ public class OrderService {
                 getOrderDto.getEndDate(),
                 pageable
         );
-
-        return orderPage.getContent()
+        //return OrderVO list
+        return orderPage.getContent()//Page extract the Order list
                 .stream()
-                .map(this::convertToVO)
-                .collect(Collectors.toList());
+                .map(this::convertToVO)//convert it into orderVO
+                .collect(Collectors.toList());//collect it into a OrderVOList
     }
 
     private OrderVO convertToVO(Order order) {
-
+        //Create OrderVO object
         OrderVO vo = new OrderVO();
         vo.setId(order.getId());
         vo.setAmount(order.getAmount());
@@ -129,19 +149,20 @@ public class OrderService {
         vo.setOrderTime(order.getOrderTime());
         vo.setOrderNumber(order.getOrderNumber());
 
+        //Find OrderItem with orderId
         List<OrderItem> items = orderItemRepository.findByOrderId(order.getId());
 
+        //if items is not null or not empty
         if (items != null && !items.isEmpty()) {
-            OrderItem firstItem = items.get(0);
+            OrderItem firstItem = items.get(0); //get the 1st item
 
+            //find the product with the first item
             Product firstProduct = productRepository.findById(firstItem.getProductId()).orElseThrow(() ->
                     new RuntimeException("Product not found"));
 
-            if (firstProduct != null) {
-
+                //set first item name and first item image to the VO
                 vo.setFirstItemName(firstProduct.getProductName());
                 vo.setFirstItemImage(firstProduct.getImage());
-            }
         }
 
         return vo;

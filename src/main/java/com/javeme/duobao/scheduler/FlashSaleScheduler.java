@@ -23,27 +23,13 @@ public class FlashSaleScheduler {
     private final ProductRepository productRepository;
     private final StringRedisTemplate stringRedisTemplate;
 
-    //This run automatically every 60 seconds
-    @Scheduled(fixedRate = 60000)
-    public void updateFlashSaleStatuses() {
-
-        LocalDateTime now = LocalDateTime.now();
-
-        //Find upcoming(0) sales where start time has passed, set to active (1)
-        flashSaleRepository.updateToActive(now);
-
-        //Find active(1) sales where end time has passed, set to expired (2)
-        flashSaleRepository.updateToExpired(now);
-
-    }
-
     @Scheduled(fixedRate = 5000)
     public void manageFlashSales() {
 
         //1. Find upcoming (0) sales where start time has passed
         //get the time now
         LocalDateTime now = LocalDateTime.now();
-        //find flashsales by status 0 and time now
+        //find flashSales by status 0 and time now
         List<FlashSale> startingSales = flashSaleRepository.findByStatusAndStartTimeLessThanEqual(0, now);
         //
         for (FlashSale sale : startingSales) {

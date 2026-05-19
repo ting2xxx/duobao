@@ -34,17 +34,22 @@ public class RedisSyncTask {
 //        }
 //    }
 
+    /**
+     *
+     */
     @Scheduled(cron = "0 0/10 * * * *")
     public void syncTopSellingProducts() {
-
+        //find top-selling products
         List<Object[]> topSellingProductIds = orderItemRepository.findTopSellingProductIds();
 
         log.info("Starting Top Selling Products Sync...");
+
         String key = "product:top_selling";
 
         // Clear the old leaderboard
         stringRedisTemplate.delete(key);
 
+        //Set the new leaderboard
         for (Object[] result : topSellingProductIds) {
 
             Number productId = (Number) result[0];

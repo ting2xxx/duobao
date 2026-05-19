@@ -19,22 +19,27 @@ public class UserService {
     private final UserRepository userRepository;
 
     public UserLoginVO login(UserLoginDTO userLoginDTO) {
+        //check username exist
         User user = userRepository.findByUsername(userLoginDTO.getUsername());
         if (user == null) {
             throw new RuntimeException("User not found");
         }
 
+        //generate hashed password
         String hashedPassword = DigestUtils.md5DigestAsHex(userLoginDTO.getPassword().getBytes());
+        //check password
         if (!user.getPassword().equals(hashedPassword)) {
             throw new RuntimeException("Invalid password");
         }
 
+        //check status
         if (user.getStatus() == 0) {
             throw new RuntimeException("User is banned");
         }
-
+        //generate jwtToken with userId
         String token = JwtUtil.createToken(user.getId());
 
+        //return userLoginVO
         UserLoginVO userLoginVO  =
                 UserLoginVO.builder().
                         id(user.getId()).
@@ -46,6 +51,8 @@ public class UserService {
     }
 
     public void register(UserRegisterDTO userRegisterDTO) {
+
+        //check username exist
         if (userRepository.findByUsername(userRegisterDTO.getUsername()) != null) {
             throw new RuntimeException("User already exists");
         }

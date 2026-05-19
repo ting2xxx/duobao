@@ -23,27 +23,36 @@ public class CartService {
     private final ProductRepository productRepository;
 
     public void addCart(Long userId, CartItemDTO cartItemDTO) {
+
+        //generate a key for cart, each cart pairs with one user
         String key = "cart:user" + userId;
         String productId = cartItemDTO.getProductId().toString();
 
+        //get product with productId
         Product product = productRepository.findById(cartItemDTO.getProductId()).orElseThrow(() ->
                 new RuntimeException("Product not found"));
 
+        //get cart item from redis
         Object currentObj = stringRedisTemplate.opsForHash().get(key, productId);
+
+        //if cart is null, currentInCart = 0, if not, currentInCart = currentObj item count
         int currentInCart = (currentObj == null) ? 0 : Integer.parseInt(currentObj.toString());
 
+        //Get total amount of currentInCart + cartItemDTO.getQuantity()
         int total = currentInCart + cartItemDTO.getQuantity();
 
+        //if the total item is greater than the stock, throw exception
         if (total > product.getStock()) {
 
             throw new RuntimeException("Limit reached! You already have " + currentInCart + " items in your cart");
         }
 
+        // if total is 0 or less, remove this specific item from the user's cart
         if (total <= 0) {
             stringRedisTemplate.opsForHash().delete(key, productId);
 
         } else {
-
+            //if not, add item into redis
             stringRedisTemplate.opsForHash().put(key, productId, String.valueOf(total));
         }
     }
@@ -51,14 +60,15 @@ public class CartService {
     public List<CartVO> getCart(Long userId) {
         String key = "cart:user" + userId;
 
-        // 1. Get everything from the Redis Hash (Map<ProductId, Quantity>)
+        // 1. Get productId and quantity from the Redis Hash (Map<ProductId, Quantity>)
         Map<Object, Object> entries = stringRedisTemplate.opsForHash().entries(key);
 
+        //if there is nothing, return empty list
         if (entries.isEmpty()) {
             return Collections.emptyList();
         }
 
-        // 2. Extract IDs and fetch all products from DB in ONE query
+        // 2. Extract IDs and fetch all products from DB in ONE query. using entries.keySet
         List<Long> productIds = entries.keySet().stream()
                 .map(id -> Long.valueOf(id.toString()))
                 .collect(Collectors.toList());
@@ -66,7 +76,7 @@ public class CartService {
         List<Product> products = productRepository.findAllById(productIds);
 
         Map<Long, Product> productMap = products.stream()
-                .collect(Collectors.toMap(Product::getId, p -> p));
+                .collect(Collectors.toMap(Product::getId, product -> product));
 
         // 3. Assemble the VO list
         return productIds.stream()

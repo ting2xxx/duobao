@@ -25,16 +25,20 @@ public class JwtUtil {
      * @return
      */
     public static String createToken(Long userId) {
+        //get current time in milliseconds
         Long nowMillis = System.currentTimeMillis();
+        //create a date object with current time
         Date now = new Date(nowMillis);
+        //create a date object with current time + expiration time
         Date exp = new Date(nowMillis + EXPIRATION_TIME);
 
+        //Use JwtBuilder to build a jwt token based on userId, now time, expiry time and secret key
         JwtBuilder builder = Jwts.builder()
                 .claim("userId", userId)
                 .setIssuedAt(now)
                 .setExpiration(exp)
                 .signWith(SignatureAlgorithm.HS256, SECRET_KEY.getBytes(StandardCharsets.UTF_8));
-
+        // return a compact URL-safe JWT string
         return builder.compact();
     }
 
@@ -43,12 +47,16 @@ public class JwtUtil {
      * (We pretend we used this in the JwtInterceptor earlier!)
      */
     public static Long parseToken(String token) {
+        //Use Jwts.parser() to parse the token with the secret key
         Claims claims = Jwts.parser()
                 .setSigningKey(SECRET_KEY.getBytes(StandardCharsets.UTF_8))
+                //parse the token to a claims, claims include the attribute when we build a jwtToken
                         .parseClaimsJws(token)
                         .getBody();
 
+                //get userId from claims
                 Object userId =  claims.get("userId");
+                //return userId as Long
                 return Long.valueOf(userId.toString());
     }
 }

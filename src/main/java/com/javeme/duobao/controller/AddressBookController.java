@@ -18,6 +18,11 @@ public class AddressBookController {
 
     private final AddressBookService addressBookService;
 
+    /**
+     * Add a new address
+     * @param addressBookDTO
+     * @return
+     */
     @PostMapping("/add")
     public ResponseEntity<String> add(@RequestBody AddressBookDTO addressBookDTO) {
         Long userId = BaseContext.getCurrentID();
@@ -25,6 +30,12 @@ public class AddressBookController {
         return ResponseEntity.ok("Address successfully added!");
     }
 
+    /**
+     * Update an existing address
+     * @param addressBookId
+     * @param addressBookDTO
+     * @return
+     */
     @PutMapping("/update/{addressBookId}")
     public ResponseEntity<String> update(@PathVariable Long addressBookId,
                                                 @RequestBody AddressBookDTO addressBookDTO) {
@@ -33,6 +44,10 @@ public class AddressBookController {
         return ResponseEntity.ok("Address successfully updated");
     }
 
+    /**
+     * list the addressBook
+     * @return
+     */
     @GetMapping("/list")
     public ResponseEntity<List<AddressBookVO>> list() {
         Long userId = BaseContext.getCurrentID();

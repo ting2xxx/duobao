@@ -14,10 +14,14 @@ public interface AddressBookRepository extends JpaRepository<AddressBook, Long> 
 
     List<AddressBook> findByUserId(Long userId);
 
+    List<AddressBook> findByUserIdOrderByIsDefaultDesc(Long userId);
+
     @Modifying
     @Transactional
-    @Query("update AddressBook set isDefault = 0 where userId = ?1")
+    @Query("update AddressBook set isDefault = 0 where userId = :userId")
     void resetDefault(Long userId);
 
     AddressBook findByUserIdAndIsDefault(Long userId, Integer isDefault);
+
+
 }

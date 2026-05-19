@@ -23,12 +23,21 @@ public class ProductController {
     private final ProductService productService;
     private final StringRedisTemplate stringRedisTemplate;
 
+    /**
+     * Get all active products
+     * @param categoryId
+     * @return
+     */
     @GetMapping("/category/{categoryId}")
     public ResponseEntity<List<ProductVO>> getActiveProductsByCategory (@PathVariable Long categoryId) {
         List<ProductVO> products = productService.getActiveProductsByCategory(categoryId);
         return ResponseEntity.ok(products);
     }
 
+    /**
+     * Get top-selling products
+     * @return
+     */
     @GetMapping("/top-selling")
     public ResponseEntity<List<ProductVO>> getTopSellingProducts() {
 
@@ -45,4 +54,6 @@ public class ProductController {
         List<ProductVO> products = productService.getTopSellingProducts(productIds);
         return ResponseEntity.ok(products);
     }
+
+
 }

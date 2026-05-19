@@ -64,8 +64,8 @@ public class PaymentController {
         log.info("--- DEBUG WEBHOOK ---");
         log.info("Signature from Mock Gateway: {}", signature);
         log.info("Signature Expected by Backend: {}", WebhookSecurityUtil.generateSignature(rawPayload, WebhookSecurityUtil.SECRET_KEY));
-        //check signature whether is correct
 
+        //check signature whether is correct
         if (!WebhookSecurityUtil.verifySignature(rawPayload, signature)) {
             log.error("SECURITY ALERT: Invalid webhook signature detected!");
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Invalid signature");
@@ -74,11 +74,14 @@ public class PaymentController {
         try {
             //parse the payload
             ObjectMapper mapper = new ObjectMapper();
+            //parse the payload to jsonNode
             JsonNode payload = mapper.readTree(rawPayload);
 
+            //get the orderNumber and status
             String orderNumber = payload.get("orderNumber").asText();
             String status = payload.get("status").asText();
 
+            //if status is success, call paySuccess
             if ("success".equals(status)) {
 
                 paymentService.paySuccess(orderNumber);

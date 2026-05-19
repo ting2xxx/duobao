@@ -31,6 +31,12 @@ public class OrderController {
     private final Queue flashSaleOrderQueue;
     private final OrderService orderService;
 
+    /**
+     * submit order
+     * FlashSalesOrder and StandardOrder
+     * @param orderDTO
+     * @return
+     */
     @PostMapping("/submit")
     public ResponseEntity<String> submit(@RequestBody OrderDTO orderDTO) {
         Product product = productRepository.findById(orderDTO.getProductId()).orElseThrow(() ->
@@ -46,6 +52,11 @@ public class OrderController {
         }
     }
 
+    /**
+     * checkout order with cart
+     * @param userId
+     * @return
+     */
     @PostMapping("/checkout")
     public ResponseEntity<String> checkout(@RequestHeader("userId") Long userId) {
 
@@ -53,6 +64,11 @@ public class OrderController {
         return ResponseEntity.ok("Order placed successfully!");
     }
 
+    /**
+     * list orders
+     * @param getOrderDto
+     * @return
+     */
     @GetMapping("/list")
     public ResponseEntity<List<OrderVO>> listOrders (GetOrderDto getOrderDto) {
         Long userId = BaseContext.getCurrentID();
@@ -60,6 +76,11 @@ public class OrderController {
         return ResponseEntity.ok(orderList);
     }
 
+    /**
+     * list order item
+     * @param orderNumber
+     * @return
+     */
     @GetMapping("/orderSummary/{orderNumber}")
     public ResponseEntity<OrderDetailVO> listOrderItem(@PathVariable String orderNumber) {
         Long userId = BaseContext.getCurrentID();
@@ -67,6 +88,11 @@ public class OrderController {
         return ResponseEntity.ok(orderDetail);
     }
 
+    /**
+     * cancel order
+     * @param orderNumber
+     * @return
+     */
     @PostMapping("/cancel/{orderNumber}")
     public ResponseEntity<String> cancelOrder(@PathVariable String orderNumber) {
 

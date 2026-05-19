@@ -50,6 +50,7 @@ public class ReviewService {
         Product product = productRepository.findById(reviewDTO.getProductId()).orElseThrow(() ->
                 new RuntimeException("Product not found"));
 
+        //format it to a clean decimal number 4.6667 to 4.7
         double roundedRating = Math.round(newAverage * 10.0) / 10.0;
         product.setRating(roundedRating);
         productRepository.save(product);

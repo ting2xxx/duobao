@@ -16,10 +16,10 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     @Modifying
     @Query("UPDATE Product p SET p.stock = p.stock - :quantity WHERE p.id = :productId AND p.stock >= :quantity")
-    int deductStock(@Param("productId") Long producId, @Param("quantity") Integer quantity);
+    int deductStock(@Param("productId") Long productId, @Param("quantity") Integer quantity);
 
     @Modifying
-    @Query("UPDATE Product p SET p.stock = p.stock + :quantity WHERE p.id = :productId AND p.stock >= :quantity")
+    @Query("UPDATE Product p SET p.stock = p.stock + :quantity WHERE p.id = :productId")
     void increaseStock(@Param("productId") Long productId, @Param("quantity") Integer quantity);
 
     List<Product> findByIsFlashSale(Boolean isFlashSale);

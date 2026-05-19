@@ -28,20 +28,25 @@
         private final StringRedisTemplate stringRedisTemplate;
         private final RabbitTemplate rabbitTemplate;
 
+        /**
+         * Process Order
+         *
+         * @param orderMessage
+         */
         @RabbitListener(queues = "flash.sale.order.queue")
         @Transactional
         public void processOrder(OrderMessage orderMessage) {
 
-            Optional<Order> existingOrder = orderRepository.findByOrderNumber(orderMessage.getOrderNumber());
+            // Check if order already exists to prevent duplicate processing
+            orderRepository.findByOrderNumber(orderMessage.getOrderNumber())
+                    .ifPresent(existingOrder -> {
+                        throw new RuntimeException("Order already exists");
+                    });
 
-            if (existingOrder.isPresent()) {
-                log.warn("Duplicate message detected: {}. Skipping gracefully.", orderMessage.getOrderNumber());
-                return;
-            }
             try {
                 log.info("Started processing new order: {}", orderMessage.getOrderNumber());
 
-
+                //check product, address and user exist
                 Product product = productRepository.findById(orderMessage.getProductId()).orElseThrow(()
                         -> new RuntimeException("Product not found"));
 
@@ -68,6 +73,7 @@
                 order.setAddress(address.getAddress());
                 order.setPostcode(address.getPostcode());
                 order.setConsignee(address.getConsignee());
+
                 Order saveOrder = orderRepository.save(order);
 
 
@@ -81,11 +87,18 @@
                 orderItem.setAmount(product.getPrice());
 
                 orderItemRepository.save(orderItem);
+
                 log.info("Order successfully finalized: {}", orderMessage.getOrderNumber());
+
+                //once Order and Order item saved, send a message to rabbitMQ to wait for 15 minutes
                 rabbitTemplate.convertAndSend("order.delay.queue", saveOrder.getId());
-                log.info("Order {} sent to delay queue. 60-second countdown started.", orderMessage.getOrderNumber());
+
+                log.info("Order {} sent to delay queue. 15 minutes countdown started.", orderMessage.getOrderNumber());
+
             } catch (Exception e) {
+
                 log.error("Error processing order: {}", orderMessage.getOrderNumber());
+                //if order failed, add back the stock back to the redis key
                 String redisKey = "stock:product:" + orderMessage.getProductId();
                 stringRedisTemplate.opsForValue().increment(redisKey, orderMessage.getQuantity());
 
@@ -94,56 +107,69 @@
             }
         }
 
+        /**
+         * Release Order
+         *
+         * @param orderId
+         */
         @RabbitListener(queues = "order.release.queue")
         @Transactional
         public void releaseOrder(Long orderId) {
 
             log.info("Checking if order {} is paid...", orderId);
+            //find order by id
+            Order existingOrder = orderRepository.findById(orderId).orElseThrow(() ->
+                    new RuntimeException("Order not found"));
 
-            Optional<Order> order = orderRepository.findById(orderId);
-
-            if (order.isEmpty()) {
-                return;
-            }
-
-            Order existingOrder = order.get();
-
+            //if order pay status is null, order is unpaid
             Integer currentPayStatus = existingOrder.getPayStatus();
             if (currentPayStatus == null) {
                 currentPayStatus = Order.UN_PAID;
             }
-
+            //if the pay status is paid, return
             if (Order.PAID.equals(currentPayStatus)) {
 
                 log.info("Order {} is already PAID. No action needed.", existingOrder.getOrderNumber());
                 return;
             }
 
+            //if order is unpaid and status is not canceled, cancel it
             if (Order.UN_PAID.equals(currentPayStatus) && !Order.CANCELLED.equals(existingOrder.getStatus())) {
                 existingOrder.setStatus(Order.CANCELLED);
                 existingOrder.setCancelTime(LocalDateTime.now());
                 orderRepository.save(existingOrder);
                 log.info("Order {} CANCELLED due to timeout.", existingOrder.getOrderNumber());
 
+                //find order items by orderId
                 List<OrderItem> items = orderItemRepository.findByOrderId(orderId);
 
                 for (OrderItem item : items) {
+                    //find product by productId
                     Product product = productRepository.findById(item.getProductId()).orElse(null);
+                    //if product is null, continue
                     if (product == null) continue;
 
+                    //if product is flashSale item, increase the stock based on order item
                     if (Boolean.TRUE.equals(product.getIsFlashSale())) {
                         String key = "stock:product:" + product.getId();
                         stringRedisTemplate.opsForValue().increment(key, item.getQuantity());
                         log.info("Flash Sale detected. Restored {} of product {} to Redis.", item.getQuantity(), product.getProductName());
+
+                        //if product is not flashSale, update the stock based on orderItem
                     } else {
                         product.setStock(product.getStock() + item.getQuantity());
                         productRepository.save(product);
                         log.info("Standard Order detected. Restored {} of product {} to MySQL.", item.getQuantity(), product.getProductName());
                     }
-                  }
-                } else {
-                    log.info("Order {} is already PAID or CANCELLED. Skipping rollback.", existingOrder.getOrderNumber());
                 }
+            } else {
+                log.info("Order {} is already PAID or CANCELLED. Skipping rollback.", existingOrder.getOrderNumber());
             }
         }
+
+        @RabbitListener(queues = "product.cache.eviction.queue")
+        public void evictProductCache(Long categoryId) {
+            stringRedisTemplate.delete("cache:products:category:" + categoryId);
+        }
+    }
 

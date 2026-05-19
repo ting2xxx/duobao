@@ -31,6 +31,7 @@ public class ProductService {
     public List<ProductVO> getActiveProductsByCategory(Long categoryId){
 
         String key = "cache:products:category:" + categoryId;
+        //get the key from redis
         String cachedJson = stringRedisTemplate.opsForValue().get(key);
         if (cachedJson != null) {
             // ObjectMapper turns the JSON String back into a List<ProductVO>
@@ -45,6 +46,7 @@ public class ProductService {
         // 1. Get the raw entities from the database
         List<Product> products = productRepository.findByCategoryIdAndStatus(categoryId, 1);
 
+        //if product list is null or empty, return an empty list
         if (products == null || products.isEmpty()) {
             stringRedisTemplate.opsForValue().set(key, "[]", 2, TimeUnit.MINUTES);
             return new ArrayList<>();
@@ -60,9 +62,10 @@ public class ProductService {
                         .collect(Collectors.toList());
 
         try {
-
+            //Convert volist to string
             String jsonToCache = objectMapper.writeValueAsString(voList);
-            stringRedisTemplate.opsForValue().set(key,jsonToCache, 30, TimeUnit.MINUTES);
+            //save the products string into redis
+            stringRedisTemplate.opsForValue().set(key, jsonToCache, 30, TimeUnit.MINUTES);
         } catch (Exception e) {
             throw new RuntimeException("Error saving cache data for category: " + categoryId);
         }

@@ -1,6 +1,7 @@
 package com.javeme.duobao.configuration;
 
 import com.javeme.duobao.interceptor.JwtInterceptor;
+import com.javeme.duobao.interceptor.RateLimitInterceptor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;

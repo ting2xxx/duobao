@@ -24,27 +24,37 @@ public class GlobalExceptionHandler {
 
         log.error("Business rule violation: {}", ex.getMessage(), ex);
 
+        //Create a response object
         ErrorResponse error = new ErrorResponse(
                 HttpStatus.BAD_REQUEST.value(),
                 ex.getMessage(),
                 System.currentTimeMillis()
         );
 
+        //return error 400 and error response
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
+    /**
+     * This method acts as the final fallback. It catches unexpected system crashes,
+     * bugs or unhandled errors (like database disconnects or NullPointerExceptions
+     * @param ex
+     * @return
+     */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneralException(Exception ex) {
 
         log.error("Fatal system error occurred", ex);
 
+        //Create a response object
         ErrorResponse error = new ErrorResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 "a system error occurred. Please try again later.",
                 System.currentTimeMillis()
 
         );
-        ex.printStackTrace();
+
+        //return error 500 and error response
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
     }
 }

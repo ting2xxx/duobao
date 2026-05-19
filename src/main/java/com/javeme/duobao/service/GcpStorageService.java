@@ -20,20 +20,26 @@ public class GcpStorageService {
     public String uploadImage(MultipartFile file) {
 
         try{
-
+            //Authenticate and get the default GCP storage client instance
             Storage storage = StorageOptions.getDefaultInstance().getService();
-
+            //get the file original file name
             String originalFileName = file.getOriginalFilename();
+            //get the file extension, index after .
             String extension = originalFileName != null ? originalFileName.substring(
                     originalFileName.lastIndexOf(".")) : ".jpg";
+            //generate a unique file name
             String uniqueFileName = UUID.randomUUID().toString() + extension;
 
-            BlobInfo blobInfo = BlobInfo.newBuilder(bucketName, uniqueFileName)
-                    .setContentType(file.getContentType())
-                    .build();
 
+            //File or folder is just a blob of data sitting in a GCP bucket
+            //create a blobInfo with bucketName and unique file name
+            BlobInfo blobInfo = BlobInfo.newBuilder(bucketName, uniqueFileName)
+                    .setContentType(file.getContentType())//set the content type
+                    .build();
+            //upload the file to GCP
             storage.create(blobInfo, file.getBytes());
 
+            //return the URL of the uploaded image
             return "https://storage.googleapis.com/" + bucketName + "/" + uniqueFileName;
         }catch (IOException e){
             throw new RuntimeException("Failed to upload image to GCP", e);

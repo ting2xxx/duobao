@@ -18,8 +18,8 @@ public class AddressBookService {
 
     public void add(Long userId, AddressBookDTO addressBookDTO) {
 
-
         AddressBook addressBook = new AddressBook();
+        //if dto isDefault == 1, reset other address isDefault to 0, so isDefault = 1 only got 1
         if (addressBookDTO.getIsDefault() == 1) {
             addressBookRepository.resetDefault(userId);
         }
@@ -36,6 +36,7 @@ public class AddressBookService {
             throw new RuntimeException("Unauthorized to update this address");
         }
 
+        //if dto isDefault == 1, reset other address isDefault to 0, so isDefault = 1 only got 1
         if (addressBookDTO.getIsDefault() == 1) {
             addressBookRepository.resetDefault(userId);
         }
@@ -47,8 +48,10 @@ public class AddressBookService {
     }
 
     public List<AddressBookVO> list(Long userId) {
-        List<AddressBook> list = addressBookRepository.findByUserId(userId);
-        return list.stream().map(this::convertToVO).toList();
+        List<AddressBook> list = addressBookRepository.findByUserIdOrderByIsDefaultDesc(userId);
+        return list.stream()
+                .map(this::convertToVO)
+                .toList();
     }
 
     private AddressBookVO convertToVO(AddressBook addressBook) {
